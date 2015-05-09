@@ -15,14 +15,19 @@ Autoloader::registerAutoloader();
 Autoloader::addDir([
 	ROOT . '/core',
 	ROOT . '/app/model',
+	ROOT . '/app/handler',
 	ROOT . '/app/util',
 	ROOT . '/public',
 ]);
 
-Config::addConfig(ROOT . '/app/config/app.php', 'app');
-Config::addConfig(ROOT . '/app/config/database.php', 'database');
+Environment::setEnvironmentOption(['file' => ROOT . '/app/config/app.php']);
+
+Config::setConfigDir(ROOT . '/app/config');
+Config::addConfig('app.php', 'app', Environment::getEnvironment());
+Config::addConfig('database.php', 'database', Environment::getEnvironment());
 
 Cookie::setTimeout(function(){
 	return strtotime(date('Y-m-d 23:59:59')) - time();
 });
+Cookie::setPath('/');
 // Cookie::setTimeout(5);

@@ -29,13 +29,12 @@ class HistoryHandler extends BaseHandler{
 				'order by date desc limit ' . $start . ',' . $limit);
 
 		// page
-		$total_count = $this->history_model->find('count(*) as `count`')['count'];
-		$total_page = max(1, ceil($total_count/$limit));
-		$pre_page = ($p-1) > 0 ? ($p-1) : null;
-		$next_page = ($p<$total_page) ? ($p+1) : null;
-		$pagination = new Pagination($this->request->uri(), $p, $total_page,
-									$page_param);
-		$pagination_html = $pagination->get_html();
+		$pagination_html = $this->getPaginationHtml([
+			'current_page' => $p,
+			'count' => $this->history_model->find('count(*) as `count`')['count'],
+			'limit' => $limit,
+			'page_param' => $page_param,
+		]);
 
 		echo $this->view->make('history.php')->with([
 			'title' => '历史 - ' . Config::get('app.title'),

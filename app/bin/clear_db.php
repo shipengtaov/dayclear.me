@@ -8,10 +8,11 @@ Logging::basicConfig('DEBUG', ['file' => ROOT . '/log/clear_db.log']);
 $base_model = new BaseModel();
 $history_model = new HistoryModel();
 
-$clear_tables = array(
+$clear_tables = [
+	'collection',
 	'post',
 	'discuss',
-);
+];
 
 $lt_date = date("Y-m-d 00:00:00");
 $last_day_date = date("Y-m-d", strtotime("-1 day"));
@@ -23,6 +24,8 @@ foreach ($clear_tables as $clear_table) {
 		$where = "`published` < '{$lt_date}'";
 	else if ($clear_table == 'discuss')
 		$where = "`discuss_time` < '{$lt_date}'";
+	else if ($clear_table == 'collection')
+		$where = "`create_time` < '{$lt_date}'";
 	$clear_count = $base_model->exec("delete from {$clear_table} where {$where}");
 	$clear_result[$clear_table] = $clear_count;
 	$output = str_pad(' ', 4) . $clear_table . " cleared " . $clear_result[$clear_table] . PHP_EOL;
@@ -31,6 +34,7 @@ foreach ($clear_tables as $clear_table) {
 }
 
 $history_result = $history_model->insert([
+	"collection" => $clear_result['collection'],
 	"post" => $clear_result['post'],
 	"discuss" => $clear_result['discuss'],
 	"date" => $last_day_date

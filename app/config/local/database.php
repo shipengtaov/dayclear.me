@@ -4,7 +4,7 @@ return [
 	'default' => [
 		'host' => 'localhost',
 		'dbname' => 'daily_post',
-		'user' => 'username',
+		'user' => 'root',
 		'password' => 'password',
 	],
 ];

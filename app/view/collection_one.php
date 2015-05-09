@@ -6,9 +6,31 @@
 	<?php if ($this->get('error_message')) { ?>
 	<div class="error">error: <?php echo $this->get('error_message');?></div>
 	<?php } ?>
-	<div>
+	<div class="collection-container">
+		<div class="collection-info">
+			<div style="line-height:120%;padding:10px;border-left:5px solid #c7e8ff;">
+				当前合集: <?php echo htmlspecialchars($collection_info['name']);?>
+			</div>
+			<div class="follow-collection">
+				<span>共: <?php echo $collection_info['count'];?></span>
+				<span>
+					<a href="/post.php?collection=<?php echo $collection_info['name'];?>">发表</a>
+				</span>
+				<span>
+					<button collection-id="<?php echo $collection_info['id'];?>" status="<?php if(!empty($this->get('has_follow')))echo 'follow';else echo 'unfollow';?>">
+						<?php
+						if (!empty($this->get('has_follow')))
+							echo "正在关注";
+						else
+							echo "关注";
+						?>
+					</button>
+				</span>
+			</div>
+		</div>
+
 		<?php if ($this->get('posts')) { ?>
-		<table class="content" style="width:80%;">
+		<table class="content">
 			<?php foreach ($posts as $post) { ?>
 				<tr><td id="<?php echo $post['id'];?>" 
 						<?php 

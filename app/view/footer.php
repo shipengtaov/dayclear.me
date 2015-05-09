@@ -1,7 +1,15 @@
 <div class="footer container">
 	<div class="footer-link" style="width:80%;">
 		<span>
-			<a href="/codeworld.php">code</a>
+			<a href="/about.php">关于</a>
+		</span>
+		
+		<span>
+			<a href="/source.php">source</a>
+		</span>
+
+		<span>
+			<a href="/script.php">脚本</a>
 		</span>
 	</div>
 </div>

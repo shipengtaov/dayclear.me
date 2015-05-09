@@ -25,8 +25,15 @@
 		<div class="post-info">
 			<span>by: <?php echo $post['user'];?></span>
 			<span class="width10"></span>
-			<span><?php echo $post['published'];?></span>
+			<span>
+				to: 
+				<a href="/c/<?php echo $post['collection'];?>"><?php echo $post['collection'];?></a>
+			</span>
 			<span class="width10"></span>
+			<span>发布于: <?php echo date('H:i:s', strtotime($post['published']));?></span>
+			<span class="width10"></span>
+			<span>最后更新: <?php echo date('H:i:s', strtotime($post['update_time']));?></span>
+
 		</div>
 		<?php if ($this->get('images')){ ?>
 		<div class="post-image">

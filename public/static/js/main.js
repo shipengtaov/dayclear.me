@@ -42,7 +42,7 @@ function poll_notify(){
 			if (data.post.has_update > 0){
 				console.log("有新帖子");
 				$("#nav-home").addClass("global-actions-post-new");
-				$("#nav-home a").attr("href", "/?hlfid=" + data.post.highlight_min);
+				$("#nav-home a").attr("href", "/?hlftime=" + data.post.highlight_min);
 			} else {
 				$("#nav-home").removeClass('global-actions-post-new');
 			}
@@ -52,23 +52,37 @@ function poll_notify(){
 
 function check_submit(event){
 	var $form = $(event.target).parents("form");
-	if (!$form.find("textarea").val()){
+
+	if (!$form.find("textarea").val() 
+		|| ($form.find("input[name=collection]").length>0 && !$form.find("input[name=collection]").val())
+	){
 		event.preventDefault();
 		return false;
 	}
 }
 
-function follow_or_unfollow(event, callback){
+function follow_or_unfollow(event, type, callback){
 	var $target = $(event.target);
 	var status = $target.attr('status');
-	var post_id = $target.attr('post-id');
+
+	var data = new Object();
+
+	if (type == 'post') {
+		data['post_id'] = $target.attr('post-id');
+		url = "/follow.php";
+	} else if (type == 'collection') {
+		data['collection_id'] = $target.attr('collection-id');
+		url = "/follow/c";
+	}
+
 	if (status == 'follow'){
 		// 取消关注
+		data['action'] = 'unfollow';
 		$.ajax({
-			url: "/follow.php",
+			url: url,
 			type: "post",
 			dateType: "json",
-			data: {action: "unfollow", post_id: post_id},
+			data: data,
 			success: function(data){
 				if (data.code != 0){
 					if (data.msg)
@@ -86,11 +100,12 @@ function follow_or_unfollow(event, callback){
 		});
 	} else if (status == 'unfollow'){
 		// 关注
+		data['action'] = 'follow';
 		$.ajax({
-			url: "/follow.php",
+			url: url,
 			type: "post",
 			dateType: "json",
-			data: {action: "follow", post_id: post_id},
+			data: data,
 			success: function(data){
 				if (data.code != 0){
 					if (data.msg)
@@ -158,7 +173,7 @@ $(function(){
 	});
 
 	$(".follow-post button").click(function(event){
-		follow_or_unfollow(event, function(target){
+		follow_or_unfollow(event, 'post', function(target){
 			target.removeClass('follow-to-unfollow');
 			target.removeClass('unfollow-to-follow');
 		});
@@ -169,6 +184,20 @@ $(function(){
 	$(".follow-post button").mouseout(function(event){
 		follow_post_button_mouseout(event);
 	});
+
+	$(".follow-collection button").click(function(event){
+		follow_or_unfollow(event, 'collection', function(target){
+			target.removeClass('follow-to-unfollow');
+			target.removeClass('unfollow-to-follow');
+		});
+	});
+	$(".follow-collection button").mouseover(function(event){
+		follow_post_button_mouseover(event);
+	});
+	$(".follow-collection button").mouseout(function(event){
+		follow_post_button_mouseout(event);
+	});
+
 
 	$(".fancybox").fancybox({
 		openEffect: "none",

@@ -37,9 +37,11 @@ class Util{
 	/**
 	 * get error_message from session
 	 */
-	public static function get_error_message($key='error_message'){
+	public static function get_error_message($clear=true, $key='error_message'){
 		session_start();
 		$error_message = isset($_SESSION[$key]) ? $_SESSION[$key] : null;
+		if ($clear)
+			unset($_SESSION[$key]);
 		session_write_close();
 		return $error_message;
 	}

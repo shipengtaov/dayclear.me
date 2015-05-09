@@ -11,16 +11,16 @@
 		<a href="/follow.php">关注列表</a>
 	</li>
 
+	<li>
+		<a href="/follow/c">关注合集</a>
+	</li>
+
+	<li>
+		<a href="/c">所有合集</a>
+	</li>
+
 	<li id="nav-notify" <?php if($this->get('has_notify'))echo 'class="global-actions-notify-new"';?>>
 		<a href="/notify.php">提醒</a>
-	</li>
-
-	<li>
-		<a href="/关于">关于</a>
-	</li>
-
-	<li>
-		<a href="/source.php">脚本</a>
 	</li>
 
 	<li>

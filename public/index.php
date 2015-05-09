@@ -7,6 +7,7 @@ class IndexHandler extends BaseHandler{
 
 	public function __construct(){
 		parent::__construct();
+		$this->collection_model = new CollectionModel();
 		$this->post_model = new PostModel();
 		$this->discuss_model = new DiscussModel();
 		$this->max_post_cookie_name = Config::get('app.cookie.max_post');
@@ -27,38 +28,32 @@ class IndexHandler extends BaseHandler{
 				: 50;
 
 		$start = ($p-1) * $limit;
-		$posts = $this->post_model->select('*', null, 
-				'order by id desc limit ' . $start . ',' . $limit);
+		$posts = $this->getPostAndFormat(null, [$start, $limit]);
+		// $posts = $this->post_model->select('*', null, 
+		// 		'order by id desc limit ' . $start . ',' . $limit);
 
+		$update_max_post_timestamp = 0;
 		if (!empty($posts) && $start == 0){
-			Cookie::set($this->max_post_cookie_name, $posts[0]['id']);
+			$update_max_post_timestamp = strtotime($posts[0]['update_time']);
 		} else 
 		if (empty($posts) && $start == 0){
-			Cookie::set($this->max_post_cookie_name, 0);
+			$update_max_post_timestamp = time();
 		}
-		foreach ($posts as &$post) {
-			$post['content'] = Text::shortThePost($post['content'], 200);
-			$post['discuss'] = $this->discuss_model->find(
-					'count(*) as `count`', 
-					['post_id=' => $post['id']]
-			)['count'];
-			$post['user'] = !empty($post['user']) ? $post['user'] : 'Annoymous';
-			$post['published'] = date('H:i:s', strtotime($post['published']));
-			$post = $this->filterPost($post);
-		}
+		if ($update_max_post_timestamp < time())
+			$update_max_post_timestamp = time();
+
+		Cookie::set($this->max_post_cookie_name, $update_max_post_timestamp);
 
 		// page
-		$total_count = $this->post_model->find('count(*) as `count`')['count'];
-		$total_page = max(1, ceil($total_count/$limit));
-		$pre_page = ($p-1) > 0 ? ($p-1) : null;
-		$next_page = ($p<$total_page) ? ($p+1) : null;
-		$pagination = new Pagination($this->request->uri(), $p, $total_page,
-									$page_param);
-		$pagination_html = $pagination->get_html();
-
+		$pagination_html = $this->getPaginationHtml([
+			'count' => $this->post_model->find('count(*) as count')['count'],
+			'current_page' => $p,
+			'limit' => $limit,
+			'page_param' => $page_param,
+		]);
 		echo $this->view->make('index.php')->with([
 			'highlight_id' => intval($this->request->get_argument('hlid')),
-			'highlight_from_id' => intval($this->request->get_argument('hlfid')),
+			'highlight_from_time' => $this->request->get_argument('hlftime') ? date('H:i:s', $this->request->get_argument('hlftime')) : null,
 			'posts' => $posts,
 			'pagination_html' => $pagination_html,
 		]);

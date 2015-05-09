@@ -16,11 +16,18 @@
 			</tr>
 			<tr class="height10"></tr>
 			<tr>
+				<td style="text-align:left;">合集：</td>
+				<td style="text-align:left;">
+					<input type="text" name="collection" placeholder="合集名称" required="required" value="<?php echo $this->get('collection');?>" style="width:500px;"/>
+				</td>
+			</tr>
+			<tr class="height10"></tr>
+			<tr>
 				<td style="text-align:left;vertical-align:top;">
 					内容：
 				</td>
 				<td>
-					<textarea name="content" id="add-post" cols="60" rows="10" required="required"></textarea>
+					<textarea name="content" id="add-post" cols="60" rows="10" required="required" style="width:500px;"></textarea>
 				</td>
 			</tr>
 			<tr class="height10"></tr>

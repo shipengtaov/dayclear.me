@@ -10,6 +10,8 @@
 			<div class="notify-row">
 				<h5><?php echo $history_row['date']; ?></h5>
 				<p>
+					合集数: <?php echo $history_row['collection'];?>
+					, 
 					帖子数: <?php echo $history_row['post'];?>
 					, 
 					讨论数: <?php echo $history_row['discuss'];?>

@@ -1,3 +1,13 @@
+.sep20{
+	height: 20px;
+}
+.sep10{
+	height: 10px;
+}
+.width10{
+	display: inline-block;
+	width: 10px;
+}
 .nav{
 	background-color: #fff;
 	/*padding: 2px;*/
@@ -258,6 +268,25 @@
 
 .comment-reply:last-child{
 	border-bottom: none;
+}
+
+/* collection */
+.collection-container{
+	position: relative;
+	width: 70%;
+}
+.collection-info{
+	width: 80%;
+}
+.follow-collection{
+	position: absolute;
+	top: 5px;
+	right: 0px;
+	width: 20%;
+	text-align: center;
+}
+.follow-collection span{
+	margin-right: 10px;
 }
 
 .footer{

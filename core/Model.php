@@ -11,6 +11,8 @@ class Model{
 	public $last_insert_id;
 	public $last_exec;
 
+	public $is_insert;
+
 	/**
 	 * 注入或自定义
 	 * @param database $db  注入的数据库连接
@@ -50,7 +52,12 @@ class Model{
 		$this->sql = $sql;
 		$statement = $this->query($sql);
 		$statement->setFetchMode(PDO::FETCH_ASSOC);
-		return $statement->fetchAll();
+		$data = $statement->fetchAll();
+		if (empty($data))
+			$this->is_insert = true;
+		else
+			$this->is_insert = false;
+		return $data;
 	}
 
 	public function find($column='*', $where=null, $append=null){
@@ -124,14 +131,21 @@ class Model{
 		$where = $this->buildWhere($where);
 		$sql = "update " . $this->table . " set ";
 		foreach ($data as $column => $value) {
-			$sql .= $this->buildColumn($column) . "=" . $this->quote($value) . ",";
+			if (String::endswith($column, '+') or String::endswith($column, '-')){
+				$real_column = substr($column, 0, -1);
+				$operator = substr($column, -1);
+				$sql .= $this->buildColumn($real_column) . '=';
+				$sql .= $this->buildColumn($real_column) . $operator . intval($value) . ',';
+			} else {
+				$sql .= $this->buildColumn($column) . '=' . $this->quote($value) . ",";
+			}
 		}
 		$this->sql = substr($sql, 0, -1) . ' ' . $where;
 		return $this->exec($this->sql);
 	}
 
 	public function save($data){
-		if (empty($this->where)){
+		if ($this->is_insert){
 			return $this->insert($data);
 		} else {
 			return $this->update($data, $this->where);

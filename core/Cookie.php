@@ -32,8 +32,8 @@ class Cookie{
 		return $cookie;
 	}
 
-	public static function setRaw($name, $value, $expire){
-		setcookie($name, $value, $expire);
+	public static function setRaw($name, $value, $expire, $path='/'){
+		setcookie($name, $value, $expire, $path);
 		$_COOKIE[$name] = $value;
 	}
 
@@ -101,7 +101,7 @@ class Cookie{
 	}
 
 	public static function setPath($path){
-		self::$path = $paht;
+		self::$path = $path;
 	}
 
 	public static function setDomain($domain){

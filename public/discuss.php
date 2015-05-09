@@ -83,13 +83,15 @@ class DiscussHandler extends BaseHandler{
 			Util::set_error_message("评论发表失败");
 			return $this->response->redirect("/post.php?id=" . $post_id);
 		}
+
+		// 更新 post update_time
+		$this->post_model->save([
+			"update_time" => date('Y-m-d H:i:s'),
+		]);
+		
 		// add or update notify timestamp
 		$this->notify_model->addNotifyPost($post['id']);
 		return $this->response->redirect('/post.php?id=' . $post_id . '&hlid=' . $res . '#' . $res);
-		// if (empty($discuss))
-		// 	return $this->response->redirect('/post.php?id=' . $post_id . '&hlid=' . $res . '#d-' . $res);
-		// else
-		// 	return $this->response->redirect('/post.php?id=' . $post_id . '&hlrid=' . $res . '#r-' . $res);
 	}
 
 }

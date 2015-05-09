@@ -7,19 +7,20 @@ class PostHandler extends BaseHandler{
 
 	public function __construct(){
 		parent::__construct();
+		$this->collection_model = new CollectionModel();
 		$this->post_model = new PostModel();
 		$this->discuss_model = new DiscussModel();
 		$this->notify_model = new NotifyModel();
 
 		$this->username_length_limit = Config::get('app.length_limit.username');
+		$this->collection_length_limit = Config::get('app.length_limit.collection');
 		$this->post_length_limit = Config::get('app.length_limit.post');
 	}
 
 	public function get(){
 		$error_message = Util::get_error_message();
-		Util::set_error_message(null);
 
-		$cookie_username = Cookie::get(Config::get('app.cookie.username'));
+		$cookie_username = htmlspecialchars(Cookie::get(Config::get('app.cookie.username')));
 		$username = !empty($cookie_username) && $cookie_username != Config::get('app.default_username')
 						? $cookie_username : '';
 
@@ -30,6 +31,7 @@ class PostHandler extends BaseHandler{
 				'title' => '发表 - ' . Config::get('app.title'),
 				'xsrf_form_html' => Util::xsrf_form_html(),
 				'error_message' => $error_message,
+				'collection' => htmlspecialchars($this->request->get_argument('collection')),
 				'username' => $username,
 				// 'inject_head' => '<style>body{background-color:green;}</style>',
 			]);
@@ -55,6 +57,9 @@ class PostHandler extends BaseHandler{
 		list($images, $origin_content, $after_replace_content) = Text::detectIMGTag($post['content']);
 		// if (!empty($images))
 		// 	$post['content'] = $after_replace_content;
+		
+		// 获取 collection 信息
+		$post['collection'] = htmlspecialchars($this->collection_model->find('name', ['id=' => $post['collection_id']])['name']);
 
 		// 更新 notify 时间
 		$this->notify_model->updateNotifyPost($post['id']);
@@ -94,13 +99,26 @@ class PostHandler extends BaseHandler{
 			$this->response->redirect('/post.php');
 		}
 		$user = $this->request->post_argument('username', Config::get('app.default_username'));
+		$collection = $this->request->post_argument('collection');
 		$content = trim($this->request->post_argument('content'));
 		if (empty($content)){
 			Util::set_error_message("未填写内容");
 			return $this->response->redirect('/post.php');
 		}
+		if (empty($collection)){
+			Util::set_error_message("未填写合集名称");
+			return $this->response->redirect('/post.php');
+		}
 		if (mb_strlen($user, 'utf-8') > $this->username_length_limit){
 			Util::set_error_message("用户名最大允许长度为 {$this->username_length_limit}");
+			return $this->response->redirect('/post.php');
+		}
+		if (preg_match(Config::get('app.pattern.collection.deny'), $collection)){
+			Util::set_error_message(Config::get('app.pattern.collection.text'));
+			return $this->response->redirect('/post.php');
+		}
+		if (mb_strlen($collection, 'utf-8') > $this->collection_length_limit){
+			Util::set_error_message("合集名称最大长度为 {$this->collection_length_limit}");
 			return $this->response->redirect('/post.php');
 		}
 		if (mb_strlen($content, 'utf-8') > $this->post_length_limit){
@@ -114,12 +132,34 @@ class PostHandler extends BaseHandler{
 				Cookie::set(Config::get('app.cookie.username'), $user);
 		}
 
+		$collection_info = $this->collection_model->find('*', ['name=' => $collection]);
+		if (!empty($collection_info)){
+			$update_collection = $this->collection_model->save([
+				'count+' => '1',
+				'update_time' => date('Y-m-d H:i:s')
+			]);
+		} else {
+			$collection_info['id'] = $this->collection_model->save([
+				'count' => 1,
+				'name' => $collection,
+				'create_time' => date('Y-m-d H:i:s'),
+				'update_time' => date('Y-m-d H:i:s'),
+			]);
+		}
+
+		if (!$update_collection and empty($collection_info['id'])){
+			Util::set_error_message("合集插入/更新失败");
+			return $this->response->redirect('/post.php');
+		}
+
 		$res = $this->post_model->insert(
 			array(
 				"user" => $user,
 				"content" => $this->request->post_argument('content'),
+				"collection_id" => $collection_info['id'],
 				"ip" => $this->request->ip(),
 				"published" => date('Y-m-d H:i:s'),
+				"update_time" => date('Y-m-d H:i:s'),
 			)
 		);
 		if (!$res){
@@ -128,6 +168,8 @@ class PostHandler extends BaseHandler{
 		}
 		// 添加需要提醒的 post
 		$this->notify_model->addPublishPost($res);
+		// 添加或更新需要提醒的 collection
+		$this->notify_model->addNotifyCollection($collection_info['id']);
 		return $this->response->redirect('/?hlid=' . $res);
 	}
 

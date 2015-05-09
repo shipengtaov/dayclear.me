@@ -1,9 +1,7 @@
 <?php
-// if (!defined('IN_SYSTEM'))
-// 	define('IN_SYSTEM', true);
-// include 'start.php';
 if (!defined('IN_SYSTEM'))
-	header('Location: /404.php');
+	define('IN_SYSTEM', true);
+include 'start.php';
 
 class AboutHandler extends BaseHandler{
 
@@ -19,11 +17,13 @@ class AboutHandler extends BaseHandler{
 
 }
 
-// $post = new AboutHandler();
+$methods = ['get'];
+$method = strtolower($_SERVER['REQUEST_METHOD']);
 
-// $method = strtolower($_SERVER['REQUEST_METHOD']);
-// if (method_exists($post, $method)){
-// 	$post->$method();
-// 	exit;
-// }
-// echo "不支持 {$method}";
+if (!in_array($method, $methods)){
+	echo "不支持 {$method}";
+	exit;
+}
+
+$aboutHandler = new AboutHandler();
+$aboutHandler->$method();

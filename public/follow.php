@@ -45,7 +45,6 @@ class FollowHandler extends BaseHandler{
 	}
 
 	public function post(){
-		Util::set_error_message(null);
 		$actions = ['follow', 'unfollow'];
 
 		$post_id = intval($this->request->post_argument('post_id'));
